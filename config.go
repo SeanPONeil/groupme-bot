@@ -1,4 +1,4 @@
-package groupmebot
+package groupme-bot
 
 import (
 	"encoding/json"
