@@ -10,10 +10,11 @@ import (
 	"net/url"
 )
 
-// Fluent API for creating GroupMe bots.
+// GroupMeBot is an abstraction over the GroupMe Bot API, and
+// allows for easy sending of messages and receiving new messages.
 type GroupMeBot struct {
 	BotConfig
-	Id        string `json:"bot_id"`
+	ID        string `json:"bot_id"`
 	OnMessage func(Message)
 }
 
@@ -32,21 +33,22 @@ func (bot GroupMeBot) messageHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+// Run a server at the callback URL provided in BotConfig.
 func (bot GroupMeBot) Run() error {
-	if bot.CallbackUrl == "" {
+	if bot.CallbackURL == "" {
 		return errors.New("Empty callback URL ")
 	}
-	callbackUrl, err := url.Parse(bot.CallbackUrl)
+	callbackURL, err := url.Parse(bot.CallbackURL)
 	if err != nil {
 		return errors.New("Invalid callback url provided " + err.Error())
 	}
 
-	_, port, err := net.SplitHostPort(callbackUrl.Host)
+	_, port, err := net.SplitHostPort(callbackURL.Host)
 	if err != nil {
 		port = "80"
 	}
 
-	http.HandleFunc(callbackUrl.Path, bot.messageHandler)
+	http.HandleFunc(callbackURL.Path, bot.messageHandler)
 	log.Println("Serving on port " + port)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
@@ -63,6 +65,9 @@ func (bot GroupMeBot) String() string {
 	return string(b)
 }
 
+// NewBot destroys any currently registered bots with the same
+// name as BotConfig.Name, and then registers and returns a new
+// GroupMeBot.
 func NewBot(config BotConfig) (*GroupMeBot, error) {
 	// Get all registered bots, delete any that have the same name
 	bots, err := allBots(config.Token)
@@ -71,7 +76,7 @@ func NewBot(config BotConfig) (*GroupMeBot, error) {
 	}
 	for _, bot := range bots {
 		if bot.Name == config.Name {
-			_, err := destroy(bot.Id, config.Token)
+			_, err := destroy(bot.ID, config.Token)
 			if err != nil {
 				return nil, err
 			}
@@ -85,6 +90,6 @@ func NewBot(config BotConfig) (*GroupMeBot, error) {
 	}
 	bot := &response.Response.Bot
 	bot.Token = config.Token
-	bot.AvatarUrl = config.AvatarUrl
+	bot.AvatarURL = config.AvatarURL
 	return bot, nil
 }

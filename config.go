@@ -10,13 +10,16 @@ func check(e error) {
 	}
 }
 
+// BotConfig describes a GroupMeBot. If CallbackUrl is set,
+// new messages posted to the group can be received by calling
+// GroupMeBot.Run()
 type BotConfig struct {
 	Token       string `json:"token"`
 	Name        string `json:"name"`
-	GroupId     string `json:"group_id"`
+	GroupID     string `json:"group_id"`
 	GroupName   string `json:"group_name"`
-	CallbackUrl string `json:"callback_url"`
-	AvatarUrl   string `json:"avatar_url"`
+	CallbackURL string `json:"callback_url"`
+	AvatarURL   string `json:"avatar_url"`
 }
 
 func (config BotConfig) String() string {
